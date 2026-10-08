@@ -4,7 +4,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { ErrorBoundary } from '@/components/ui';
-import { clearSession } from '@/lib';
+import { clearSession, trackViewportHeight } from '@/lib';
 
 import App from './App';
 
@@ -12,6 +12,8 @@ function resetSession() {
   clearSession();
   window.location.reload();
 }
+
+trackViewportHeight();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
