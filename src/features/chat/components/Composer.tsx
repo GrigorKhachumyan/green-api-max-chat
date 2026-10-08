@@ -57,6 +57,8 @@ export function Composer({ onSend }: { onSend: (text: string) => void }) {
           type="submit"
           disabled={!trimmed || tooLong}
           aria-label="Отправить"
+          // Keeps the focus (and the phone keyboard) in the text field, as messengers do.
+          onMouseDown={(event) => event.preventDefault()}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-white transition hover:bg-accent-hover disabled:opacity-40"
         >
           <SendIcon className="h-5 w-5" />

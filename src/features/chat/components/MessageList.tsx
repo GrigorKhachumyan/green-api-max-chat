@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 
 import { type Chat, isLocalMessage, type Message, quoteFor } from '@/state';
 
@@ -31,6 +31,17 @@ export function MessageList({ chat, onRetry, onReloadHistory }: Props) {
     const element = scrollRef.current;
     if (element && (atBottomRef.current || sentByUser)) element.scrollTop = element.scrollHeight;
   }, [chat.chatId, chat.messages.length, localCount]);
+
+  // The list gets shorter when the phone keyboard opens or the composer grows: keep the last message in view.
+  useEffect(() => {
+    const element = scrollRef.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() => {
+      if (atBottomRef.current) element.scrollTop = element.scrollHeight;
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   function handleScroll() {
     const element = scrollRef.current;
