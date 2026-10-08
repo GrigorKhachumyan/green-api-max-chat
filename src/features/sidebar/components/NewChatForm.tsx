@@ -47,7 +47,7 @@ export function NewChatForm({ credentials, inputRef, onChatOpened }: Props) {
           inputMode="tel"
           autoComplete="tel"
           aria-label="Номер телефона получателя"
-          className="min-w-0 flex-1 rounded-xl bg-canvas px-3 py-2 text-sm ring-accent transition outline-none placeholder:text-muted focus:ring-2"
+          className="min-w-0 flex-1 rounded-xl bg-canvas px-3 py-2 text-base ring-accent transition outline-none placeholder:text-muted focus:ring-2 md:text-sm"
         />
         <button
           type="submit"

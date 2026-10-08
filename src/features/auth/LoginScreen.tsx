@@ -73,6 +73,9 @@ export function LoginScreen({ notice, onLogin }: Props) {
           placeholder="https://xxxx.api.green-api.com"
           autoComplete="url"
           inputMode="url"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
         />
         <LoginField
           label="idInstance"

@@ -56,4 +56,18 @@ describe('request', () => {
 
     await expect(pending).rejects.toHaveProperty('name', 'AbortError');
   });
+
+  it('works without AbortSignal.any, which older Safari lacks', async () => {
+    vi.stubGlobal('AbortSignal', { ...AbortSignal, any: undefined, timeout: undefined });
+    mockFetch(async () => new Response('{"ok":true}'));
+    await expect(request('https://api', { signal: new AbortController().signal })).resolves.toEqual({ ok: true });
+  });
+
+  it('removes its listener from the caller signal after the request', async () => {
+    mockFetch(async () => new Response('null'));
+    const signal = new AbortController().signal;
+    const remove = vi.spyOn(signal, 'removeEventListener');
+    await request('https://api', { signal });
+    expect(remove).toHaveBeenCalledWith('abort', expect.any(Function));
+  });
 });

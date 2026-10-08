@@ -11,6 +11,32 @@ import {
 import { type ChatAction, handleNotification } from '@/state';
 
 const STANDBY_NOTICE_DELAY_MS = 1000;
+const WAKE_AFTER_HIDDEN_MS = 10_000;
+
+/**
+ * Counts the moments when the receive loop should start over: the network is back, or the page is visible again
+ * after a while. Mobile browsers freeze background tabs, and the long-polling request that was open is dead by then.
+ */
+function useWakeUps(): number {
+  const [wakeUps, setWakeUps] = useState(0);
+
+  useEffect(() => {
+    let hiddenAt = 0;
+    const wake = () => setWakeUps((count) => count + 1);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') hiddenAt = Date.now();
+      else if (hiddenAt && Date.now() - hiddenAt > WAKE_AFTER_HIDDEN_MS) wake();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('online', wake);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('online', wake);
+    };
+  }, []);
+
+  return wakeUps;
+}
 
 async function pollExclusively(
   idInstance: string,
@@ -43,24 +69,29 @@ export function useNotificationPolling(
   const [instanceState, setInstanceState] = useState<InstanceState>('authorized');
   const [standby, setStandby] = useState(false);
 
+  const wakeUps = useWakeUps();
+
   const onUnauthorizedRef = useRef(onUnauthorized);
   useEffect(() => {
     onUnauthorizedRef.current = onUnauthorized;
   });
 
+  // A restored session skips the login check, so the instance could have been logged out meanwhile.
+  // Right after the login it was just checked: a second request would hit the rate limit (429).
+  useEffect(() => {
+    if (!checkInstanceState) return;
+    const controller = new AbortController();
+    getStateInstance(credentials, controller.signal)
+      .then(({ stateInstance }) => setInstanceState(stateInstance))
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted && isAuthError(error)) onUnauthorizedRef.current();
+      });
+    return () => controller.abort();
+  }, [credentials, checkInstanceState]);
+
   useEffect(() => {
     const controller = new AbortController();
     const { signal } = controller;
-
-    // A restored session skips the login check, so the instance could have been logged out meanwhile.
-    // Right after the login it was just checked: a second request would hit the rate limit (429).
-    if (checkInstanceState) {
-      getStateInstance(credentials, signal)
-        .then(({ stateInstance }) => setInstanceState(stateInstance))
-        .catch((error: unknown) => {
-          if (!signal.aborted && isAuthError(error)) onUnauthorizedRef.current();
-        });
-    }
 
     const handlers: PollHandlers = {
       onNotification: (body) => handleNotification(body, dispatch, setInstanceState),
@@ -72,7 +103,7 @@ export function useNotificationPolling(
     );
 
     return () => controller.abort();
-  }, [credentials, dispatch, checkInstanceState]);
+  }, [credentials, dispatch, wakeUps]);
 
   return { connectionError, instanceState, standby };
 }

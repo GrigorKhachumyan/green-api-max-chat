@@ -15,21 +15,34 @@ export function buildUrl(credentials: Credentials, method: string, suffix = ''):
   return `${base}/waInstance${credentials.idInstance}/${method}/${credentials.apiTokenInstance}${suffix}`;
 }
 
+/** Not AbortSignal.any/timeout: AbortSignal.any is missing before Safari 17.4 (iOS 17.4). */
 async function fetchText(url: string, options: RequestOptions): Promise<{ status: number; ok: boolean; text: string }> {
   const { method = 'GET', body, signal, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
-  const timeout = AbortSignal.timeout(timeoutMs);
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  let timedOut = false;
+  const timer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, timeoutMs);
+  if (signal?.aborted) abort();
+  signal?.addEventListener('abort', abort, { once: true });
+
   try {
     const response = await fetch(url, {
       method,
       body: body === undefined ? undefined : JSON.stringify(body),
       headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
-      signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
+      signal: controller.signal,
     });
     return { status: response.status, ok: response.ok, text: response.ok ? await response.text() : '' };
   } catch (error) {
     if (signal?.aborted) throw error;
-    const message = timeout.aborted ? TIMEOUT_MESSAGE : messageForStatus(NETWORK_ERROR_STATUS);
+    const message = timedOut ? TIMEOUT_MESSAGE : messageForStatus(NETWORK_ERROR_STATUS);
     throw new GreenApiError(message, NETWORK_ERROR_STATUS);
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', abort);
   }
 }
 

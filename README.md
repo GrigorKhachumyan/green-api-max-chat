@@ -40,6 +40,7 @@ Other message types are shown as a placeholder ("Photo — open it in the messen
 ## Tech stack
 
 React 19 · TypeScript (strict) · Vite · Tailwind CSS 4. No other runtime dependencies.
+Supported browsers: Chrome/Edge 111+, Firefox 128+, Safari 16.4+ (iOS 16.4+) — the baseline of Tailwind CSS 4. Checked in Chrome and in WebKit (Safari engine) on desktop and iPhone sizes.
 Vitest, ESLint (typescript-eslint, react-hooks) and Prettier for development.
 
 ## Run locally
@@ -106,6 +107,7 @@ ESLint enforces the boundaries: no imports of a file inside another folder and n
 
 ## Known limitations
 
+- One receiver per instance: the HTTP API queue gives each notification to only one client. With the chat open on two devices at once, statuses and messages reach only one of them (the other catches up from the history after a reload). Several devices would need a backend that reads the queue once and pushes events to clients (WebSocket/SSE).
 - The chat list exists only in the current browser session: GREEN-API has no method to delete a chat, and the list is not loaded from the server.
 - Retrying a message whose response was lost on the way back can send it twice (the API has no idempotency key).
 - Only unit tests: reducer, mappers, the API client, the receive loop and helpers. There are no component tests.

@@ -10,7 +10,7 @@ export function LoginField({ label, hint, ...inputProps }: Props) {
     <label className="block space-y-1.5">
       <span className="text-sm font-medium">{label}</span>
       <input
-        className="w-full rounded-xl border border-line bg-canvas/50 px-3 py-2.5 text-sm transition outline-none placeholder:text-muted/60 focus:border-accent focus:bg-surface"
+        className="w-full rounded-xl border border-line bg-canvas/50 px-3 py-2.5 text-base transition outline-none placeholder:text-muted/60 focus:border-accent focus:bg-surface md:text-sm"
         {...inputProps}
       />
       {hint && <span className="block text-xs text-muted">{hint}</span>}
