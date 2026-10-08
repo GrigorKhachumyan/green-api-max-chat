@@ -1,0 +1,9 @@
+export { BackIcon } from './BackIcon';
+export { CheckIcon } from './CheckIcon';
+export { ClockIcon } from './ClockIcon';
+export { DoubleCheckIcon } from './DoubleCheckIcon';
+export { LogoIcon } from './LogoIcon';
+export { LogoutIcon } from './LogoutIcon';
+export { PlusIcon } from './PlusIcon';
+export { SendIcon } from './SendIcon';
+export { UserIcon } from './UserIcon';
