@@ -6,7 +6,7 @@ The UI follows the layout of [web.max.ru](https://web.max.ru/): chat list on the
 MAX (v3) and Telegram instances of GREEN-API share the same API, so the same build works with both — the messenger is defined only by the instance you log in with.
 Tested end-to-end on a **MAX** instance and on a **Telegram** instance.
 
-**Live demo:** _add the Vercel URL here_
+**Live demo:** https://green-api-max-chat-gold.vercel.app — log in with the `apiUrl`, `idInstance` and `apiTokenInstance` of your own instance.
 
 ## Screenshots
 
